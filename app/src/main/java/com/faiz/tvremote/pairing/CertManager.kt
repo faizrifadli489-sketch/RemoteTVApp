@@ -32,15 +32,17 @@ object CertManager {
         return generate(serviceName)
     }
 
-    fun loadExisting(): Cert? = try {
-        val ks = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
-        val cert = ks.getCertificate(ALIAS) as? X509Certificate ?: return null
-        val certPem = "-----BEGIN CERTIFICATE-----\n" +
-            Base64.encodeToString(cert.encoded, Base64.DEFAULT) +
-            "-----END CERTIFICATE-----\n"
-        // Key tidak bisa diekstrak dari KeyStore; pemakai memakai KeyStore langsung.
-        Cert(keyPem = "", certPem = certPem)
-    } catch (_: Exception) { null }
+    fun loadExisting(): Cert? {
+        return try {
+            val ks = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+            val cert = ks.getCertificate(ALIAS) as? X509Certificate ?: return null
+            val certPem = "-----BEGIN CERTIFICATE-----\n" +
+                Base64.encodeToString(cert.encoded, Base64.DEFAULT) +
+                "-----END CERTIFICATE-----\n"
+            // Key tidak bisa diekstrak dari KeyStore; pemakai memakai KeyStore langsung.
+            Cert(keyPem = "", certPem = certPem)
+        } catch (_: Exception) { null }
+    }
 
     private fun generate(serviceName: String): Cert {
         val kpg = KeyPairGenerator.getInstance("RSA", ANDROID_KEYSTORE)
