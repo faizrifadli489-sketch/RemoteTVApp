@@ -173,13 +173,11 @@ class MainActivity : AppCompatActivity() {
             return
         }
         // Penjagaan batas volume (mirror server.js)
-        if (key == "volume_up" && maxVolume != null) {
-            // level dicek dari state terakhir; kirim volume_down bila sudah di batas
-            val st = lastState
-            if (st?.volumeLevel != null && st.volumeLevel!! >= maxVolume!!) {
-                c.sendKeyByName("volume_down")
-                return
-            }
+        val maxV = maxVolume
+        val level = lastState?.volumeLevel
+        if (key == "volume_up" && maxV != null && level != null && level >= maxV) {
+            c.sendKeyByName("volume_down")
+            return
         }
         c.sendKeyByName(key)
     }
@@ -189,9 +187,9 @@ class MainActivity : AppCompatActivity() {
     private fun renderState(s: TvConnection.TvState) {
         lastState = s
         // Penjagaan realtime: TV naik melewati batas -> turunkan otomatis (mirror server.js)
-        if (maxVolume != null && s.volumeLevel != null && !s.volumeMuted &&
-            s.volumeLevel!! > maxVolume!!
-        ) {
+        val level = s.volumeLevel
+        val maxV = maxVolume
+        if (maxV != null && level != null && s.volumeMuted == false && level > maxV) {
             conn?.sendKey(KeyCodes.VOLUME_DOWN)
         }
         val dot = if (s.connected) "🟢" else "🔴"
